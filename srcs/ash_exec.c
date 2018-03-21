@@ -6,7 +6,7 @@
 /*   By: arohani <arohani@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/02/16 14:24:51 by arohani           #+#    #+#             */
-/*   Updated: 2018/03/21 14:55:19 by arohani          ###   ########.fr       */
+/*   Updated: 2018/03/21 15:15:53 by arohani          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,12 @@ static void	launch_exec(t_shell *shell, char *full_path)
 static int	*redirect_check(t_shell *shell)
 {
 /* Basically, to perform > or >>, first close stdout, then open file to the right of > or >>, then execute command to the
-	left of > or >>, then close the fd used for file on the right of > or >> */	
+	left of > or >>, then close the fd used for file on the right of > or >> 
+
+	To preform <, do same as >, except for 2 things: 1) close(0) instead of close(1) to obviously close stdin instead of stdout, and
+	2) when opening file based on argument that comes after "<", open as READONLY instead of writeonly
+
+*/	
 	int		i;
 	int		fd = -1;
 	int		*result = (int *)malloc(sizeof(int) * 2);
@@ -38,14 +43,15 @@ static int	*redirect_check(t_shell *shell)
 	i = 0;
 	while (shell->args && shell->args[i])
 	{
-		// if '>' found, need to check if what comes after exists, open (so it gets fd) else create then open, then execute
-		if (shell->args[i] && ((!(ft_strcmp(shell->args[i], ">")) || (!(ft_strcmp(shell->args[i], ">>"))))))
+		if (shell->args[i] && ((!(ft_strcmp(shell->args[i], ">")) 
+			|| !(ft_strcmp(shell->args[i], "<")) || !(ft_strcmp(shell->args[i], ">>")))))
 		{
-			printf("redirections found\n");
-			close(1);
-			printf("shell->args[i] = %s\nshell->args[i][1] = %c\n", shell->args[i], shell->args[i][1]);
-			fd = (shell->args[i][1] && shell->args[i][1] == '>') ? open(shell->args[i + 1], O_CREAT | O_APPEND | O_WRONLY, 0644)
-			: open(shell->args[i + 1], O_CREAT | O_WRONLY, 0644);
+			(ft_strcmp(shell->args[i], "<") == 0) ? close(0) : close(1);
+			if (ft_strcmp(shell->args[i], "<") == 0)
+				fd = open(shell->args[i + 1], O_RDONLY);
+			else
+				fd = (shell->args[i][1] && shell->args[i][1] == '>') ? open(shell->args[i + 1], O_CREAT | O_APPEND | O_WRONLY, 0644)
+				: open(shell->args[i + 1], O_CREAT | O_TRUNC | O_WRONLY, 0644);
 			if (fd < 0)
 			{
 				printf("manage error opening file here\n");
@@ -56,8 +62,6 @@ static int	*redirect_check(t_shell *shell)
 			result[0] = fd;
 			return (result);
 		}
-		else
-			printf("redirections not found. shell->args[i] = %s before incrementing\nstrcmp with >> = %d\n", shell->args[i], ft_strcmp(shell->args[i], ">>"));
 		i++;
 	}
 	result[0] = 0;
@@ -84,7 +88,6 @@ static int	ash_launch(t_shell *shell)
 		if (fd_changed[1])
 		{
 			close(fd_changed[0]);
-//			open("/dev/fd/1", O_WRONLY);
 		}
 	}
 	else if (pid < 0)
