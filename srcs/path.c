@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 
 static char	**fetch_paths(t_shell *shell, int m)
 {
@@ -33,6 +34,24 @@ static char	**fetch_paths(t_shell *shell, int m)
 			tmp = shell->list;
 			search_env++;
 		}
+	}
+	return (NULL);
+}
+
+static char	**fetch_cd_paths(t_shell *shell)
+{
+	char	**path = NULL;
+	t_env	*tmp;
+
+	tmp = shell->list;
+	while (tmp)
+	{
+		if (ft_strcmp(tmp->var, "CDPATH") == 0)
+		{
+			path = ft_strsplit(tmp->val, ':');
+			return (path);
+		}
+		tmp = tmp->next;
 	}
 	return (NULL);
 }
@@ -66,7 +85,43 @@ char		*arg_full_path(t_shell *shell, int m)
 	return (NULL);
 }
 
-int			has_paths(t_shell *shell)
+char		**cd_path(t_shell *shell)
+{
+	// not accounting for cd path in modified environment. should verify if env -i can call builtins?
+	char		*str;
+	char		*full_path;
+	char		**paths;
+	int			i;
+	int			ret;
+
+	printf("entered cd_path\n");
+	i = 0;
+	paths = fetch_cd_paths(shell);
+	while (paths && paths[i])
+	{
+		str = (paths[i][ft_strlen(paths[i]) - 1] != '/')
+		? ft_strjoin(paths[i++], "/") : ft_strdup(paths[i++]);
+		//will eventually need to know starting point i.e. cd argument (different if there are options,
+		//and depends on syntax) before concatenating str with cd argument
+		full_path = ft_strjoin(str, shell->args[1]);
+		if (str && str[0])
+			ft_strdel(&str);
+		if (!(ret = access(full_path, F_OK)))
+		{
+			free_table(paths);
+			ft_strdel(&(shell->args[1]));
+			shell->args[1] = ft_strdup(full_path);
+			ft_strdel(&full_path);
+			regular_cd(shell);
+		}
+		else if (full_path && full_path[0])
+			ft_strdel(&full_path);
+	}
+	free_table(paths);
+	return (NULL);
+}
+
+int			has_paths(t_shell *shell, int cdpath)
 {
 	t_env		*tmp;
 
@@ -75,8 +130,13 @@ int			has_paths(t_shell *shell)
 	tmp = shell->list;
 	while (tmp)
 	{
-		if (ft_strcmp(tmp->var, "PATH") == 0)
+		if (cdpath == 0 && ft_strcmp(tmp->var, "PATH") == 0)
 			return (1);
+		if (cdpath == 1 && ft_strcmp(tmp->var, "CDPATH") == 0)
+		{
+			printf("has paths will return 2\n");
+			return (2);
+		}
 		tmp = tmp->next;
 	}
 	return (0);

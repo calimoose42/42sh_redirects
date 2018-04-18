@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "minishell.h"
+#include <stdio.h>
 #define ARG shell->args[1]
 
 static int	cd_no_arg(t_shell *shell)
@@ -82,7 +83,7 @@ static int	cd_relative(t_shell *shell)
 	return (1);
 }
 
-static int	regular_cd(t_shell *shell)
+int			regular_cd(t_shell *shell)
 {
 	struct stat	buf;
 
@@ -100,9 +101,16 @@ static int	regular_cd(t_shell *shell)
 	}
 	if (chdir(ARG) != 0)
 	{
-		ft_putstr_fd("cd: ", 2);
-		ft_putstr_fd(ARG, 2);
-		ft_putstr_fd(": No such file or directory\n", 2);
+	//	printf("first tried changing directory without concat of cdpath\nhas_paths(shell) = %d\n", has_paths(shell, 1));
+		//include clause to check for CDPATH and concat, similar to execution of binaries searched via PATH
+		if (has_paths(shell, 1) == 2 && cd_path(shell) != NULL)
+			return (1);
+		else
+		{
+			ft_putstr_fd("cd: ", 2);
+			ft_putstr_fd(ARG, 2);
+			ft_putstr_fd(": No such file or directory\n", 2);
+		}
 	}
 	return (1);
 }
