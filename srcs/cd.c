@@ -12,7 +12,7 @@
 
 #include "minishell.h"
 #include <stdio.h>
-#define ARG shell->args[1]
+#define ARG shell->args[shell->st]
 
 static int	cd_no_arg(t_shell *shell)
 {
@@ -126,6 +126,10 @@ int			regular_cd(t_shell *shell)
 
 int			ash_cd(t_shell *shell)
 {
+	shell->st = opt_check(shell);
+	printf("shell->st = %d\nshell->l = %d\nshell->p = %d\n", shell->st, shell->l, shell->p);
+	if (shell->st == -1)
+		return (1);
 	if (ARG == NULL)
 		cd_no_arg(shell);
 	else if (shell->args && (ft_strcmp(ARG, "-") == 0))
