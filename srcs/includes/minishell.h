@@ -76,7 +76,7 @@ t_env			*mod_init(t_shell *shell);
 int				ft_exec(t_shell *shell, char **env);
 char			**env_to_tab(t_env *list);
 char			*arg_full_path(t_shell *shell, int m);
-char			**cd_path(t_shell *shell);
+int				cd_path(t_shell *shell);
 void			free_table(char **tab);
 int				builtin_check(t_shell *shell);
 void			free_env(t_env *list);

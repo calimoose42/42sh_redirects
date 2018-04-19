@@ -85,7 +85,7 @@ char		*arg_full_path(t_shell *shell, int m)
 	return (NULL);
 }
 
-char		**cd_path(t_shell *shell)
+int		cd_path(t_shell *shell)
 {
 	// not accounting for cd path in modified environment. should verify if env -i can call builtins?
 	char		*str;
@@ -96,29 +96,46 @@ char		**cd_path(t_shell *shell)
 
 	printf("entered cd_path\n");
 	i = 0;
+	printf("DEBUG 1\n");
 	paths = fetch_cd_paths(shell);
+	printf("DEBUG 2\n");
 	while (paths && paths[i])
 	{
+		printf("DEBUG 3\n");
 		str = (paths[i][ft_strlen(paths[i]) - 1] != '/')
 		? ft_strjoin(paths[i++], "/") : ft_strdup(paths[i++]);
 		//will eventually need to know starting point i.e. cd argument (different if there are options,
 		//and depends on syntax) before concatenating str with cd argument
+		printf("DEBUG 4\n");
 		full_path = ft_strjoin(str, shell->args[1]);
+		printf("DEBUG 5\n");
 		if (str && str[0])
 			ft_strdel(&str);
+		printf("DEBUG 6\n");	
 		if (!(ret = access(full_path, F_OK)))
 		{
+			printf("DEBUG 7\n");
 			free_table(paths);
+			printf("DEBUG 8\n");
 			ft_strdel(&(shell->args[1]));
+			printf("DEBUG 9\n");
 			shell->args[1] = ft_strdup(full_path);
+			printf("DEBUG 10\n");
 			ft_strdel(&full_path);
+			printf("DEBUG 11\n");
 			regular_cd(shell);
+			return (1);
+			printf("DEBUG 12\n");
 		}
 		else if (full_path && full_path[0])
 			ft_strdel(&full_path);
+		printf("DEBUG 13\n");	
 	}
-	free_table(paths);
-	return (NULL);
+	printf("DEBUG 14\n");
+	if (paths && paths[0])
+		free_table(paths);
+	printf("DEBUG 15\n");
+	return (0);
 }
 
 int			has_paths(t_shell *shell, int cdpath)

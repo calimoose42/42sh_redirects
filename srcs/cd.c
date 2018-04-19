@@ -103,13 +103,22 @@ int			regular_cd(t_shell *shell)
 	{
 	//	printf("first tried changing directory without concat of cdpath\nhas_paths(shell) = %d\n", has_paths(shell, 1));
 		//include clause to check for CDPATH and concat, similar to execution of binaries searched via PATH
-		if (has_paths(shell, 1) == 2 && cd_path(shell) != NULL)
+		if (has_paths(shell, 1) == 2 && cd_path(shell))
 			return (1);
 		else
 		{
-			ft_putstr_fd("cd: ", 2);
-			ft_putstr_fd(ARG, 2);
-			ft_putstr_fd(": No such file or directory\n", 2);
+			if (lstat(ARG, &buf) >= 0 && S_ISLNK(buf.st_mode))
+			{
+				ft_putstr_fd("cd: ", 2);
+				ft_putstr_fd(ARG, 2);
+				ft_putstr_fd(": Too many levels of symbolic links\n", 2);
+			}
+			else
+			{
+				ft_putstr_fd("cd: ", 2);
+				ft_putstr_fd(ARG, 2);
+				ft_putstr_fd(": No such file or directory\n", 2);
+			}
 		}
 	}
 	return (1);
