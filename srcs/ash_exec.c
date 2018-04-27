@@ -83,7 +83,7 @@ static int	ash_launch(t_shell *shell)
 	if (pid == 0)
 	{
 		fd_changed = redirect_check(shell);
-		full_path = (has_paths(shell, 0) == 1) ? arg_full_path(shell, 0) : NULL;
+		full_path = (has_paths(shell, 0) == 1) ? arg_full_path(shell) : NULL;
 		launch_exec(shell, full_path);
 		if (fd_changed[1])
 		{

@@ -16,7 +16,7 @@ static int	env_launch_exec(t_shell *shell, char **mod)
 {
 	char	*full_path;
 
-	full_path = arg_full_path(shell, 1);
+	full_path = arg_full_path(shell);
 	if (execve(shell->args[0], shell->args, mod) == -1)
 	{
 		if (execve(full_path, shell->args, mod) == -1)

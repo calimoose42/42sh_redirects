@@ -13,11 +13,11 @@
 #include "minishell.h"
 #include <stdio.h>
 
-void    handle_options(t_shell *shell)
+/*void    handle_options(t_shell *shell)
 {
     
 }
-
+*/
 int		opt_check(t_shell *shell)
 {
     int         i;

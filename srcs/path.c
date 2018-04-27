@@ -13,14 +13,12 @@
 #include "minishell.h"
 #include <stdio.h>
 
-static char	**fetch_paths(t_shell *shell, int m)
+static char	**fetch_paths(t_shell *shell)
 {
 	t_env	*tmp;
 	char	**path;
-	int		search_env;
 
-	search_env = 0;
-	tmp = (m) ? shell->list->mod : shell->list;
+	tmp = shell->list;
 	while (tmp)
 	{
 		if (ft_strcmp(tmp->var, "PATH") == 0)
@@ -29,11 +27,6 @@ static char	**fetch_paths(t_shell *shell, int m)
 			return (path);
 		}
 		tmp = tmp->next;
-		if (shell->list && m && !tmp && search_env == 0)
-		{
-			tmp = shell->list;
-			search_env++;
-		}
 	}
 	return (NULL);
 }
@@ -56,7 +49,7 @@ static char	**fetch_cd_paths(t_shell *shell)
 	return (NULL);
 }
 
-char		*arg_full_path(t_shell *shell, int m)
+char		*arg_full_path(t_shell *shell)
 {
 	char		*str;
 	char		*full_path;
@@ -65,7 +58,7 @@ char		*arg_full_path(t_shell *shell, int m)
 	char		**paths;
 
 	i = 0;
-	paths = fetch_paths(shell, m);
+	paths = fetch_paths(shell);
 	while (paths && paths[i])
 	{
 		str = (paths[i][ft_strlen(paths[i]) - 1] != '/')
