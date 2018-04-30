@@ -124,45 +124,76 @@ int			regular_cd(t_shell *shell)
 	return (1);
 }
 
-static void	cd_canon(void)
+static void	grab_pwd(t_shell *shell, char **clean)
+{
+	t_env	*tmp = shell->list;
+
+	printf("entered grab_pwd\n");
+	while (tmp)
+	{
+		printf("DEBUG 1\n");
+		if (ft_strcmp(tmp->var, "PWD") == 0 && tmp->val)
+		{
+			printf("DEBUG 2\n");
+			*clean = (tmp->val[ft_strlen(tmp->val) - 1] == '/') ?
+				ft_strdup(tmp->val) : ft_strjoin(tmp->val, "/");
+			printf("DEBUG 3 in grab_pwd\nWAS: %s\nNOW: %s\n", shell->args[shell->st], *clean);
+			return ;		
+		}
+		printf("DEBUG 4\n");
+		tmp = tmp->next;
+	}
+	printf("DEBUG 5\n");
+}
+
+static void	cd_canon(t_shell *shell)
 {
 	//successfully removes single dots and shortens remaining string, now need to process .. and treat symbolic links
 	char	*clean = NULL;
 	char	*tmp = NULL;
 	int		i = 0;
-	char	*test = "././././libft/../././libft/././..";
 	char	**tab;
 
-	tab = ft_strsplit(test, '/');
+	tab = (shell->st > -1) ? ft_strsplit(shell->args[shell->st], '/') : NULL;
 	printf("table after ft_strsplit is :\n");
 	ft_print_table(tab);
+	if (shell->args[shell->st][0] != '/')
+		grab_pwd(shell, &clean);
+	printf("DEBUG a\n");
 	while (tab && tab[i])
 	{
-		while (ft_strcmp(tab[i], ".") == 0)
-			i++;
-		while (tab[i] && ft_strcmp(tab[i], "."))
+		if (tab[i] && ft_strcmp(tab[i], "."))
 		{
+			printf("DEBUG d, tab[i] = %s\n", tab[i]);
 			if (!clean)
 				clean = ft_strjoin(tab[i], "/");
 			else if (clean && tab[i])
 			{
+				printf("DEBUG e\n");
 				tmp = ft_strjoin(clean, tab[i]);
+				printf("DEBUG f\n");
 				ft_strdel(&clean);
+				printf("DEBUG g\n");
 				clean = ft_strjoin(tmp, "/");
+				printf("DEBUG h\n");
 				ft_strdel(&tmp);
+				printf("DEBUG i\n");
 			}
-			i++;
+			printf("DEBUG j\n");
 		}
+		i++;
 	}
+	printf("DEBUG k\n");
 	free_table(tab);
-	printf("WAS: %s\nNOW: %s\n", test, clean);
+	printf("WAS: %s\nNOW: %s\n", shell->args[shell->st], clean);
 	ft_strdel(&clean);
+	printf("DEBUG l\n");
 }
 
 int			ash_cd(t_shell *shell)
 {
 	shell->st = opt_check(shell);
-	cd_canon();
+	cd_canon(shell);
 	printf("shell->st = %d\nshell->l = %d\nshell->p = %d\n", shell->st, shell->l, shell->p);
 	if (shell->st == -1)
 		return (1);
