@@ -124,9 +124,45 @@ int			regular_cd(t_shell *shell)
 	return (1);
 }
 
+static void	cd_canon(void)
+{
+	//successfully removes single dots and shortens remaining string, now need to process .. and treat symbolic links
+	char	*clean = NULL;
+	char	*tmp = NULL;
+	int		i = 0;
+	char	*test = "././././libft/../././libft/././..";
+	char	**tab;
+
+	tab = ft_strsplit(test, '/');
+	printf("table after ft_strsplit is :\n");
+	ft_print_table(tab);
+	while (tab && tab[i])
+	{
+		while (ft_strcmp(tab[i], ".") == 0)
+			i++;
+		while (tab[i] && ft_strcmp(tab[i], "."))
+		{
+			if (!clean)
+				clean = ft_strjoin(tab[i], "/");
+			else if (clean && tab[i])
+			{
+				tmp = ft_strjoin(clean, tab[i]);
+				ft_strdel(&clean);
+				clean = ft_strjoin(tmp, "/");
+				ft_strdel(&tmp);
+			}
+			i++;
+		}
+	}
+	free_table(tab);
+	printf("WAS: %s\nNOW: %s\n", test, clean);
+	ft_strdel(&clean);
+}
+
 int			ash_cd(t_shell *shell)
 {
 	shell->st = opt_check(shell);
+	cd_canon();
 	printf("shell->st = %d\nshell->l = %d\nshell->p = %d\n", shell->st, shell->l, shell->p);
 	if (shell->st == -1)
 		return (1);
