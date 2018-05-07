@@ -72,7 +72,11 @@ static int	cd_relative(t_shell *shell)
 
 	tmp = (shell->list) ? shell->list : NULL;
 	if (chdir(ARG) != 0)
-		ft_putstr_fd("error changing directory from cd_relative\n", 2);
+	{
+		ft_putstr_fd("cd: ", 2);
+		ft_putstr_fd(ARG, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);		
+	}
 	else
 	{
 		if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -90,7 +94,10 @@ int			regular_cd(t_shell *shell)
 	if (lstat(ARG, &buf) >= 0)
 	{
 		if ((S_ISDIR(buf.st_mode)))
+		{
+			printf("%s is a directory\n", ARG);
 			update_old_pwd(shell, ARG);
+		}
 		else if (!(S_ISLNK(buf.st_mode)))
 		{
 			ft_putstr_fd("cd: ", 2);
@@ -157,8 +164,10 @@ static void	cd_canon(t_shell *shell)
 	tab = (shell->st > -1) ? ft_strsplit(shell->args[shell->st], '/') : NULL;
 	printf("table after ft_strsplit is :\n");
 	ft_print_table(tab);
-	if (shell->args[shell->st][0] != '/')
+	if (shell->args[shell->st][0] != '/') //to concat with PWD if curpath doesnt start from root
 		grab_pwd(shell, &clean);
+	else
+		clean = ft_strdup("/");	//to account for curpath starting from root
 	printf("DEBUG a\n");
 	while (tab && tab[i])
 	{
